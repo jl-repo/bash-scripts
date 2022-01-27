@@ -1,12 +1,8 @@
 ---
 - name: "Cockpit Setup and Configuration"
-  vars_prompt:
-    - name: host 
-      private: false
-      prompt: Please enter the hostname for the server.
-  hosts: '{{ host }}'
+  hosts: '{{ inventory_hostname }}'
   tasks:
-  # Install Cockpit and Cockpit Modules
+  # Install Cockpit and Cockpit Modules.
   - name: "Yum Install"
     yum:
       name:
@@ -15,7 +11,7 @@
       - cockpit-storaged 
       state: latest
       update_cache: yes
-  # Change Port in cockpit.socket file
+  # Change Port in cockpit.socket file.
   - name: "Set Port"
     tags: port
     lineinfile:
@@ -25,17 +21,17 @@
      state: present
      backup: yes
     register: portout
-  # Start Cockpit
+  # Start Cockpit.
   - name: "Start Cockpit"
     service:
      name: cockpit
      state: start
-  # Enable Cockpit Socket
+  # Enable Cockpit Socket.
   - name: "Enable Cockpit"
     service: cockpit.socket
     state: start
     enabled: yes
-  # SELinux - Enable Cockpit to listen on Port
+  # SELinux - Enable Cockpit to listen on Port.
   - name: "SELinux: Allow Cockpit to listen on tcp port 3389"
     community.general.seport:
      ports: 3389
@@ -43,7 +39,7 @@
      setype: websm_port_t
      state: present
      ignore_errors: yes
-  # Firewalld - Enable Cockpit to listen on Port
+  # Firewalld - Enable Cockpit to listen on Port.
   - name: "Firewalld: Allow Cockpit to listen on tcp port 3389"
     ansible.posix.firewalld:
      port: 3389/tcp
@@ -51,7 +47,21 @@
      immediate: yes
      state: enabled
      ignore_errors: yes
-     notify: reload firewalld 
+     notify: reload firewalld
+  # Check and output Status of Cockpit to a file.
+  - name: "Check Status"
+    shell: systemctl status cockpit > /tmp/cockpit.status
+  #Email Completion.
+  - name: "Email Confirmation"
+    mail:
+     subject: 'Cockpit Installation completed on {{ inventory_hostname }}'
+     from: email@email.com
+     to: email@email.com
+     attach:
+      - /usr/lib/systemd/system/cockpit.socket
+      - /tmp/cockpit.status
+    charset: utf8
+    delegate_to: "{{ inventory_hostname }}"
   # Handler to restart firewalld
   handlers:
    - name: reload firewalld
