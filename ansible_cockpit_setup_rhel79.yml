@@ -1,0 +1,59 @@
+---
+- name: "Cockpit Setup and Configuration"
+  vars_prompt:
+    - name: host 
+      private: false
+      prompt: Please enter the hostname for the server.
+  hosts: '{{ host }}'
+  tasks:
+  # Install Cockpit and Cockpit Modules
+  - name: "Yum Install"
+    yum:
+      name:
+      - cockpit
+      - cockpit-dashboard
+      - cockpit-storaged 
+      state: latest
+      update_cache: yes
+  # Change Port in cockpit.socket file
+  - name: "Set Port"
+    tags: port
+    lineinfile:
+     path: /usr/lib/systemd/system/cockpit.socket
+     regexp: "ListenStream=9090"
+     line: "ListenStream=3389"
+     state: present
+     backup: yes
+    register: portout
+  # Start Cockpit
+  - name: "Start Cockpit"
+    service:
+     name: cockpit
+     state: start
+  # Enable Cockpit Socket
+  - name: "Enable Cockpit"
+    service: cockpit.socket
+    state: start
+    enabled: yes
+  # SELinux - Enable Cockpit to listen on Port
+  - name: "SELinux: Allow Cockpit to listen on tcp port 3389"
+    community.general.seport:
+     ports: 3389
+     porto: tcp
+     setype: websm_port_t
+     state: present
+     ignore_errors: yes
+  # Firewalld - Enable Cockpit to listen on Port
+  - name: "Firewalld: Allow Cockpit to listen on tcp port 3389"
+    ansible.posix.firewalld:
+     port: 3389/tcp
+     permanent: yes
+     immediate: yes
+     state: enabled
+     ignore_errors: yes
+     notify: reload firewalld 
+  # Handler to restart firewalld
+  handlers:
+   - name: reload firewalld
+     service: firewalld
+     state: reloaded
