@@ -39,6 +39,7 @@
      setype: websm_port_t
      state: present
      ignore_errors: yes
+     when: ansible_selinux.status == "enabled"
   # Firewalld - Enable Cockpit to listen on Port.
   - name: "Firewalld: Allow Cockpit to listen on tcp port 3389"
     ansible.posix.firewalld:
@@ -51,10 +52,10 @@
   # Check and output Status of Cockpit to a file.
   - name: "Check Status"
     shell: systemctl status cockpit > /tmp/cockpit.status
-  #Email Completion.
+  # Email Completion.
   - name: "Email Confirmation"
     mail:
-     subject: 'Cockpit Installation completed on {{ inventory_hostname }}'
+     subject: 'Cockpit Installation completed on {{ inventory_hostname }}.'
      from: email@email.com
      to: email@email.com
      attach:
