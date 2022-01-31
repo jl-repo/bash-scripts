@@ -1,6 +1,6 @@
 ---
 - name: "Cockpit Setup and Configuration"
-  hosts: '{{ inventory_hostname }}'
+  hosts: all
   tasks:
   # Install Cockpit and Cockpit Modules.
   - name: "Yum Install"
@@ -52,17 +52,6 @@
   # Check and output Status of Cockpit to a file.
   - name: "Check Status"
     shell: systemctl status cockpit > /tmp/cockpit.status
-  # Email Completion.
-  - name: "Email Confirmation"
-    mail:
-     subject: 'Cockpit Installation completed on {{ inventory_hostname }}.'
-     from: email@email.com
-     to: email@email.com
-     attach:
-      - /usr/lib/systemd/system/cockpit.socket
-      - /tmp/cockpit.status
-    charset: utf8
-    delegate_to: "{{ inventory_hostname }}"
   # Handler to restart firewalld
   handlers:
    - name: reload firewalld
