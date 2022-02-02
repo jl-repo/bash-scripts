@@ -1,6 +1,8 @@
 --- # This playbooks installs and configures Cockpit on Red Hat Enterprise Linux 7.9 on Port 3389 while configuring SELinux and Firewalld.
 - name: Cockpit Setup and Configuration
   hosts: all
+  become: yes
+  become_method: sudo
   tasks:
   # Install Cockpit and Cockpit Modules.
   - name: Yum Install
@@ -24,15 +26,12 @@
   # Start Cockpit.
   - name: Start Cockpit
     service:
-     name: {{ item }}
+     name: "{{ item }}"
      state: started
+     enabled: yes
     loop:
        - cockpit
        - 'cockpit.socket'
-  # Enable Cockpit Socket.
-  - name: Enable Cockpit
-    service: cockpit.socket
-    enabled: yes
   # SELinux - Enable Cockpit to listen on Port.
   - name: SELinux - Allow Cockpit to listen on tcp port 3389
     community.general.seport:
