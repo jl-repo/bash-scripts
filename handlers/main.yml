@@ -1,0 +1,7 @@
+---
+  # Handler to restart firewalld
+handlers:
+  - name: reload firewalld
+    service: firewalld
+    state: reloaded
+...

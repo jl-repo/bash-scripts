@@ -1,10 +1,10 @@
----
-- name: "Cockpit Setup and Configuration"
+--- # This playbooks installs and configures Cockpit on Red Hat Enterprise Linux 7.9 on Port 3389 while configuring SELinux and Firewalld.
+- name: Cockpit Setup and Configuration
   hosts: all
   tasks:
   # Install Cockpit and Cockpit Modules.
-  - name: "Yum Install"
-    yum:
+  - name: Yum Install
+    ansible.builtin.yum:
       name:
       - cockpit
       - cockpit-dashboard
@@ -12,7 +12,7 @@
       state: latest
       update_cache: yes
   # Change Port in cockpit.socket file.
-  - name: "Set Port"
+  - name: Set Port
     tags: port
     lineinfile:
      path: /usr/lib/systemd/system/cockpit.socket
@@ -22,17 +22,19 @@
      backup: yes
     register: portout
   # Start Cockpit.
-  - name: "Start Cockpit"
+  - name: Start Cockpit
     service:
-     name: cockpit
-     state: start
+     name: {{ item }}
+     state: started
+    loop:
+       - cockpit
+       - 'cockpit.socket'
   # Enable Cockpit Socket.
-  - name: "Enable Cockpit"
+  - name: Enable Cockpit
     service: cockpit.socket
-    state: start
     enabled: yes
   # SELinux - Enable Cockpit to listen on Port.
-  - name: "SELinux: Allow Cockpit to listen on tcp port 3389"
+  - name: SELinux - Allow Cockpit to listen on tcp port 3389
     community.general.seport:
      ports: 3389
      porto: tcp
@@ -41,7 +43,7 @@
      ignore_errors: yes
      when: ansible_selinux.status == "enabled"
   # Firewalld - Enable Cockpit to listen on Port.
-  - name: "Firewalld: Allow Cockpit to listen on tcp port 3389"
+  - name: Firewalld - Allow Cockpit to listen on tcp port 3389
     ansible.posix.firewalld:
      port: 3389/tcp
      permanent: yes
@@ -50,10 +52,6 @@
      ignore_errors: yes
      notify: reload firewalld
   # Check and output Status of Cockpit to a file.
-  - name: "Check Status"
+  - name: Check Status
     shell: systemctl status cockpit > /tmp/cockpit.status
-  # Handler to restart firewalld
-  handlers:
-   - name: reload firewalld
-     service: firewalld
-     state: reloaded
+...
