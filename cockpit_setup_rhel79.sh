@@ -11,7 +11,7 @@ HOSTNAME="$(hostname)"
 
 # Check if the script is run as root or sudo.
 
-if [ "$(whoami &2>/dev/null)" != "root" ] && [ "$(id -un &2>/dev/null)" != "root" ]; then
+if [ "$(whoami &2> /dev/null)" != "root" ] && [ "$(id -un &2> /dev/null)" != "root" ]; then
       echo "You must be root to run this script! Switch to root or use sudo."
       exit 1
 fi
@@ -20,7 +20,7 @@ fi
 
 echo "Please provide a port number for Cockpit to use (default is 9090)."
 
-read -p 'Port: ' PORT
+read -rp 'Port: ' PORT
 
 # Validate if the PORT Value is a number.
 
@@ -41,7 +41,7 @@ fi
 # User confirms the PORT value.
 
 echo "Is the port correct?"
-read -p 'Yes/No: ' ANSWER
+read -rp 'Yes/No: ' ANSWER
 if [ "${ANSWER,,}" = "yes" ]; then
     echo "Thanks for confirming. Continuing Setup....."
 else 
@@ -58,7 +58,7 @@ yum -y install cockpit cockpit-dashboard cockpit-storaged
 
 echo "Changing Cockpit port to $PORT..."
 cp /usr/lib/systemd/system/cockpit.socket /usr/lib/systemd/system/cockpit.backup
-sed -i 's/ListenStream=9090/ListenStream=$PORT/' /usr/lib/systemd/system/cockpit.socket
+sed -i "s/ListenStream=9090/ListenStream=$PORT/" /usr/lib/systemd/system/cockpit.socket
 
 # Start and enable Cockpit Service.
 
@@ -69,7 +69,7 @@ systemctl start cockpit && systemctl enable --now cockpit.socket
 
 if [ "${FIREWALL}" = "active" ]; then
     echo "Adding firewall rule to FirewallD for port $PORT and reloading....."
-	firewall-cmd --permanent --add-port=$PORT/tcp && firewall-cmd --reload
+	firewall-cmd --permanent --add-port="$PORT"/tcp && firewall-cmd --reload
 else 
     echo "Firewall.d is not running... continuing..."  
 fi
@@ -78,7 +78,7 @@ fi
 
 if [ "${SELINUX}" = "Enforced" ]; then
     echo "Adding SELinux rule for Cockpit ..."
-	semanage port -a -t websm_port_t -p tcp $PORT
+	semanage port -a -t websm_port_t -p tcp "$PORT"
 else 
     echo "SELinux is not running... continuing..."  
 fi
@@ -86,3 +86,9 @@ fi
 # Echo out completion and how to access.
 
 echo "Cockpit is now installed and configured... You can now access via https://$IPADDRESS:$PORT or https://$HOSTNAME:$PORT."
+
+# Press any keep to exit the script.
+echo "Press any key to exit."
+while true ; do
+    if read -rn 1; then exit; else :; fi
+done
