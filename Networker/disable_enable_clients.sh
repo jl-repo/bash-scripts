@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to enable or disable Networker clients via nsradmin via.
+# Script to enable or disable Networker clients via nsradmin through user standard input.
 # By Jared Leslie
 
 # Colour variables.
@@ -26,7 +26,7 @@ else
     /usr/bin/echo -e "$RED""File doesnt exist. Please make sure that $input_file is generated in the same directory as this script.""$CLEAR"
     exit 1
 fi
-# Edit initial input file to remove any blank lines. This is to prevent a sitiation where clients are mass edited that are not listed in the file.
+# Input Correction: Edit initial input file to remove any blank lines. This is to prevent a sitiation where clients are mass edited that are not listed in the file.
 /usr/bin/sed '/^$/d' client_input_"$date".txt > client_clean_"$date".txt
 # Generate arry from client_clean file.
 mapfile -t servers < client_clean_"$date".txt
@@ -47,7 +47,7 @@ else
 	/usr/bin/echo -e "Invalid status. Please try again."
 	exit 1
 fi
-# Count to make sure the clists is greater than zero.
+# Error Catch: Count to make sure the clists is greater than zero.
 count="$(echo "${#servers[@]}")"
 if [ "$count" -lt 1 ]; then
 	/usr/bin/echo -e "$RED""No clients input to disable/enable. Check $input_file. Exiting script.""$CLEAR"
@@ -66,7 +66,7 @@ done
 echo ""
 cat nsradmin_input_"$date".txt
 /usr/bin/echo ""
-# Confirmation case for the user to continue or exit out.
+# User confirmation case for the user to continue or exit out.
 while true
 do
     read -r -p 'Do you want to continue? Yes/No ' continue
