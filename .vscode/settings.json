@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible-playbook.json": "file:///home/leslij2/Documents/Repo/bash-scripts/ansible_cockpit_setup_rhel79.yml"
+    }
+}

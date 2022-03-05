@@ -22,7 +22,7 @@ for server in "${NetworkerServers[@]}"; do
     echo -e "$BLUE""Testing connectivity to $server""$CLEAR"
     echo ""
     # DNS Name Resoultion Test.
-    NWIP=$(dig +short "$server" | head -1)
+    NWIP=$(/usr/bin/dig +short "$server" | head -1)
     if [ -z "$NWIP" ]; then
         echo -e "$RED""DNS Lookup has failed.""$CLEAR"
     else
@@ -30,18 +30,18 @@ for server in "${NetworkerServers[@]}"; do
     fi
     echo ""
     # Ping Test.
-    ping -c 3 "$server" &> /dev/null && echo -e "$GREEN""Ping Success.""$CLEAR" || echo -e "$RED""Ping Fail.""$CLEAR"
+    /usr/bin/ping -c 3 "$server" &> /dev/null && echo -e "$GREEN""Ping Success.""$CLEAR" || echo -e "$RED""Ping Fail.""$CLEAR"
     echo ""
     # Telnet Test.
-    echo "quit" | curl -v telnet://"$server":7937 &> /dev/null && echo -e "$GREEN""Telnet Success on port 7937.""$CLEAR" || echo -e "$RED""Telnet Fail on port 7937.""$CLEAR"
+    echo "quit" | /usr/bin/curl -v telnet://"$server":7937 &> /dev/null && echo -e "$GREEN""Telnet Success on port 7937.""$CLEAR" || echo -e "$RED""Telnet Fail on port 7937.""$CLEAR"
     echo ""
     # Networker inbuilt nsrrpcinfo cmdlet test if extended client is installed.
     if [ ! -x /usr/sbin/nsrrpcinfo ]; then
         echo -e "$RED""Networker Extended Client is not installed.""$CLEAR" 
         echo ""
     else
-        echo -e "$GREEN""nsrrpcinfo -p $server""$CLEAR"
-        nsrrpcinfo -p "$server"
+        echo -e "$GREEN""sudo /usr/sbin/nsrrpcinfo -p $server""$CLEAR"
+        /usr/sbin/nsrrpcinfo -p "$server"
         echo ""
     fi
 done
@@ -50,7 +50,7 @@ for dd in "${DataDomain[@]}"; do
     echo -e "$BLUE""Testing connectivity to $dd""$CLEAR"
     echo ""
     # DNS Name Resoultion Test.
-    DDIP=$(dig +short "$dd" | head -1)
+    DDIP=$(/usr/bin/dig +short "$dd" | head -1)
     if [ -z "$DDIP" ]; then
         echo -e "$RED""DNS Lookup has failed.""$CLEAR"
     else
@@ -58,14 +58,14 @@ for dd in "${DataDomain[@]}"; do
     fi
     echo ""
     # Ping Test
-    ping -c 3 "$dd" &> /dev/null && echo -e "$GREEN""Ping Success.""$CLEAR" || echo -e "$RED""Ping Fail.""$CLEAR"
+    /usr/bin/ping -c 3 "$dd" &> /dev/null && echo -e "$GREEN""Ping Success.""$CLEAR" || echo -e "$RED""Ping Fail.""$CLEAR"
     echo ""
     # Telnet Test via curl.
-    echo "quit" | curl -v telnet://"$dd":2049 &> /dev/null && echo -e "$GREEN""Telnet Success on port 2049.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2049.""$CLEAR"
+    echo "quit" | /usr/bin/curl -v telnet://"$dd":2049 &> /dev/null && echo -e "$GREEN""Telnet Success on port 2049.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2049.""$CLEAR"
     echo ""
-    echo "quit" | curl -v telnet://"$dd":2052 &> /dev/null && echo -e "$GREEN""Telnet Success on port 2052.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2052.""$CLEAR"
+    echo "quit" | /usr/bin/curl -v telnet://"$dd":2052 &> /dev/null && echo -e "$GREEN""Telnet Success on port 2052.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2052.""$CLEAR"
     echo ""
-    echo "quit" | curl -v telnet://"$dd":111 &> /dev/null && echo -e "$GREEN""Telnet Success on port 111.""$CLEAR" || echo -e "$RED""Telnet Fail on port 111.""$CLEAR"
+    echo "quit" | /usr/bin/curl -v telnet://"$dd":111 &> /dev/null && echo -e "$GREEN""Telnet Success on port 111.""$CLEAR" || echo -e "$RED""Telnet Fail on port 111.""$CLEAR"
     echo ""
 done
 # Press any keep to exit the script.
