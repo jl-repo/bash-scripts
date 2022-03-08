@@ -47,7 +47,7 @@ fi
 /usr/bin/echo ""
 # Create the input file for nsradmin.
 for server in "${servers[@]}"; do
-    /usr/bin/echo -e ". type: nsr client; name: $server \nupdate scheduled backup: disabled\nupdate client state: retired\nupdate protection group list: \nupdate comment: Disabled $req_number" | tee -a nsradmin_input_"$date".txt >/dev/null
+    /usr/bin/echo -e ". type: nsr client; name: $server \nupdate scheduled backup: disabled\nupdate protection group list: \nupdate client state: retired\nupdate comment: Disabled $req_number" | tee -a nsradmin_input_"$date".txt >/dev/null
 done
 /usr/bin/echo -e "quit" | tee -a nsradmin_input_"$date".txt >/dev/null
 # Cat out nsradmin input file.
@@ -59,7 +59,7 @@ cat nsradmin_input_"$date".txt
 while true; do
     read -r -p 'Do you want to continue? Yes/No ' continue
     case "$continue" in
-    n | N | no | No) /usr/bin/rm nsradmin_input_"$date".txt nsradmin_output_"$date".txt client_clean_"$date".txt client_input_"$date".txt 2>/dev/null && exit 1 ;;
+    n | N | no | No) /usr/bin/rm nsradmin_input_"$date".txt nsradmin_output_"$date".txt client_clean_"$date".txt client_input_"$date".txt 2>/dev/null & exit 1 ;;
     y | Y | yes | Yes) break ;;
     *) /usr/bin/echo -e "$RED""Response not valid""$CLEAR" ;;
     esac
