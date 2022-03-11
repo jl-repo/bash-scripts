@@ -9,7 +9,7 @@ GREEN='\e[0;92m'
 CLEAR='\e[0m'
 # Date and Time variable for files.
 date=$(/usr/bin/date +"%m_%d_%Y_%H_%M_%S")
-# Get client information from standard input.
+# Get client information from standard input and output to a temp file to clean.
 echo -e "$BLUE""Enter the list of clients you would like to decommission. <CTRL> <D> to finalize the list.""$CLEAR"
 input_data=$(</dev/stdin)
 /usr/bin/printf "%s\n" "${input_data[@]}" &>client_input_"$date".txt
@@ -17,7 +17,7 @@ echo ""
 # Get Request Number.
 echo -e "$BLUE""Enter the Request Number for Audit tracking. <Enter> to finalize.""$CLEAR"
 read -r req_number
-# Check if the client file exists.
+# Check if the client file exists. << Debug Step
 input_file=client_input_"$date".txt
 if test -f "$input_file"; then
     /usr/bin/echo ""
@@ -36,7 +36,7 @@ mapfile -t servers <client_clean_"$date".txt
 /usr/bin/echo ""
 /usr/bin/printf "%s\n" "${servers[@]}"
 /usr/bin/echo ""
-# Error Catch: Count to make sure the clists is greater than zero.
+# Error Catch: Count to make sure the clists is greater than zero. 
 count="$(echo "${#servers[@]}")"
 if [ "$count" -lt 1 ]; then
     /usr/bin/echo -e "$RED""No clients input to disable/enable. Check $input_file. Exiting script.""$CLEAR"

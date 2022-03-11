@@ -61,12 +61,36 @@ for dd in "${DataDomain[@]}"; do
     /usr/bin/ping -c 3 "$dd" &>/dev/null && echo -e "$GREEN""Ping Success.""$CLEAR" || echo -e "$RED""Ping Fail.""$CLEAR"
     echo ""
     # Telnet Test via curl.
-    echo "quit" | /usr/bin/curl -v telnet://"$dd":2049 &>/dev/null && echo -e "$GREEN""Telnet Success on port 2049.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2049.""$CLEAR"
-    echo ""
-    echo "quit" | /usr/bin/curl -v telnet://"$dd":2052 &>/dev/null && echo -e "$GREEN""Telnet Success on port 2052.""$CLEAR" || echo -e "$RED""Telnet Fail on port 2052.""$CLEAR"
-    echo ""
-    echo "quit" | /usr/bin/curl -v telnet://"$dd":111 &>/dev/null && echo -e "$GREEN""Telnet Success on port 111.""$CLEAR" || echo -e "$RED""Telnet Fail on port 111.""$CLEAR"
-    echo ""
+    # DD often connects via CURL but exits with error code 56. Added 56 as a successful exit.
+    echo "quit" | /usr/bin/curl -v --connect-timeout 15 telnet://"$dd":2049 &>/dev/null
+    CODE=$?
+    if [ $CODE != "0" ] && [ $CODE != "56" ]; then 
+        echo -e "$RED""Telnet Fail on port 2049.""$CLEAR"
+        echo ""
+    else
+        echo -e "$GREEN""Telnet Success on port 2049.""$CLEAR"
+        echo ""
+    fi
+    # DD often connects via CURL but exits with error code 56. Added 56 as a successful exit.
+	echo "quit" | /usr/bin/curl -v --connect-timeout 15 telnet://"$dd":2052 &>/dev/null
+    CODE=$?
+    if [ $CODE != "0" ] && [ $CODE != "56" ]; then
+        echo -e "$RED""Telnet Fail on port 2052.""$CLEAR"
+        echo ""
+    else
+        echo -e "$GREEN""Telnet Success on port 2052.""$CLEAR"
+        echo ""
+    fi
+    # DD often connects via CURL but exits with error code 56. Added 56 as a successful exit.
+    echo "quit" | /usr/bin/curl -v --connect-timeout 15 telnet://"$dd":111 &>/dev/null
+    CODE=$?
+    if [ $CODE != "0" ] && [ $CODE != "56" ]; then
+        echo -e "$RED""Telnet Fail on port 111.""$CLEAR"
+        echo ""
+    else
+        echo -e "$GREEN""Telnet Success on port 111.""$CLEAR"
+        echo ""
+    fi
 done
 # Press any keep to exit the script.
 echo "Press any key to exit."
