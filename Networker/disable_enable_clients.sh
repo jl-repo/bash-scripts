@@ -20,14 +20,14 @@ input_data=$(</dev/stdin)
 input_file=client_input_"$date".txt
 if test -f "$input_file"; then
     /usr/bin/echo ""
-    /usr/bin/echo -e "$GREEN""$input_file exits.""$CLEAR"
+    /usr/bin/echo -e "$GREEN""$input_file exists.""$CLEAR"
     /usr/bin/echo ""
 else
     /usr/bin/echo -e "$RED""File doesnt exist. Please make sure that $input_file is generated in the same directory as this script.""$CLEAR"
     exit 1
 fi
 # Input Correction: Edit initial input file to remove any blank lines. This is to prevent a sitiation where clients are mass edited that are not listed in the file.
-/usr/bin/sed '/^$/d' client_input_"$date".txt >client_clean_"$date".txt
+/usr/bin/sed '/^[[:space;]]*$/d;/^$/d' client_input_"$date".txt >client_clean_"$date".txt
 # Generate arry from client_clean file.
 mapfile -t servers <client_clean_"$date".txt
 # Print the array of clients.
