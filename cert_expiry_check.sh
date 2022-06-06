@@ -32,7 +32,7 @@ for server in "${servers[@]}"; do
         if test "${diff}" -lt "$(("${gracedays}"*24*3600))"; then
             if test "${diff}" -lt "0"; then
                 echo -e "$RED""The certificate for ${server} has already expired.""$CLEAR"
-            els
+            else
                 echo -e "$YELLOW""The certificate for ${server} will expire in $(("$diff"/3600/24)) days.""$CLEAR"
             fi
         else
