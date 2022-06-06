@@ -11,7 +11,6 @@ CLEAR='\e[0m'
 gracedays=30
 
 #URL lists with port to check.
-
 declare -a servers=(
     "google.com:443"
     "shellcheck.net:443"
@@ -19,11 +18,11 @@ declare -a servers=(
 )
 
 #Certificate expiry.
-echo -e "Checking certificates..."
+echo -e "Checking Certicates..."
 echo -e "Grace days is set to $gracedays days."
 echo -e ""
 for server in "${servers[@]}"; do
-        #Capture expiry date using openssl on port 443.
+        #Capture expiry date using openssl using port defined in the servers array.
         data="$(date --date="$(echo | openssl s_client -connect "${server}" -servername "${server}" 2>/dev/null | openssl x509 -noout -enddate | awk -F '=' '{print $NF}' )" --iso-8601)"
         #Math to compare and generate date difference.
         ssldate="$(date -d "${data}" '+%s')"
