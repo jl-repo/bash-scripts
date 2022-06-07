@@ -1,22 +1,22 @@
 #!/bin/bash 
-
+# Script to check and report on certificate expiry and email results.
+# By Jared Leslie
 
 # Colour variables.
 RED='\e[0;91m'
 GREEN='\e[0;92m'
 YELLOW='\e[43m'
 CLEAR='\e[0m'
-
 #Grace days before expiry.
 gracedays=30
-
+#Email address to send report
+email=example@example.com
 #URL lists with port to check.
 declare -a servers=(
     "google.com:443"
     "shellcheck.net:443"
     "expired.badssl.com:443"
 )
-
 #Certificate expiry.
 echo -e "Checking Certicates..."
 echo -e "Grace days is set to $gracedays days."
@@ -38,4 +38,8 @@ for server in "${servers[@]}"; do
         else
             echo -e "$GREEN""The certifcate for ${server} will expire in $(("$diff"/3600/24)) days.""$CLEAR"
         fi
-done
+done > /tmp/certifcate_output.txt
+#Read output from for loop.
+cat /tmp/certifcate_output.txt
+#Send email
+echo /tmp/certifcate_output.txt | mailx -s "Certificate Expiry Report - $(date "+%D")" -a /tmp/certifcate_output.txt "$email"
