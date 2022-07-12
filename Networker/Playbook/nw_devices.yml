@@ -1,0 +1,34 @@
+---  
+- name: Update Networker Devices
+  hosts: all
+  tasks:
+    - name: Creating nsradmin update file for {{ datadomain }} to {{ status }}
+      shell: "/usr/bin/echo -e 'option regexp\n. type: NSR device;device access information: ^.*{{ datadomain }}.*$ \nupdate enabled: {{ status }} \nexit' > /tmp/device_modify_tmp"
+      
+    - name: Setting device status for {{ datadomain }} to {{ status }}
+      shell: /usr/sbin/nsradmin -i /tmp/device_modify_tmp > /tmp/device_diag_tmp
+    
+    - name: Creating nsradmin query file for {{ datadomain }} to {{ status }}
+      shell: "/usr/bin/echo -e 'option regexp\n. type: NSR device;device access information: ^.*{{ datadomain }}.*$ \nshow name;device access information;enabled\nprint\nexit' > /tmp/device_status_tmp"
+
+    - name: Querying device status for {{ datadomain }} to {{ status }}
+      shell: /usr/sbin/nsradmin -i /tmp/device_status_tmp > /tmp/device_result_tmp
+    
+    - name: Slurp results
+      ansible.builtin.slurp:
+        src: /tmp/device_result_tmp
+      register: slurp_result
+
+    - name: Display results
+      debug:
+        msg: "{{ slurp_result['content'] | b64decode }}"
+
+    #- name: Removing nrsadmin temp files
+    #  ansible.builtin.file:
+    #    path: /tmp/{{ item }}
+    #    state: absent
+    #  with_items:
+    #    - device_modify_tmp
+    #    - device_status_tmp
+    #    - device_result_tmp
+    #    - device_diag_tmp
