@@ -42,4 +42,4 @@ done > /tmp/certifcate_output.txt
 #Read output from for loop.
 cat /tmp/certifcate_output.txt
 #Send email
-echo /tmp/certifcate_output.txt | mailx -s "Certificate Expiry Report - $(date "+%D")" -a /tmp/certifcate_output.txt "$email"
+#echo /tmp/certifcate_output.txt | mailx -s "Certificate Expiry Report - $(date "+%D")" -a /tmp/certifcate_output.txt "$email"
