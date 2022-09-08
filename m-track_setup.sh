@@ -247,11 +247,16 @@ fi
 #EOF
 
 echo "Creating the application.properties file..."
-cat > /opt/migrationtool/application.properties << EOF
-mtrack.png-files.location=.
-server.address=127.0.0.1
-EOF
-
+if [ "${NGINX}" = yes ]; then
+	cat > /opt/migrationtool/application.properties <<- EOF
+	mtrack.png-files.location=.
+	server.address=127.0.0.1
+	EOF
+elif [ "${NGINX}" = no ]; then
+	cat > /opt/migrationtool/application.properties <<- EOF
+	mtrack.png-files.location=.
+	EOF
+fi
 
  # Create Systemd service file.
 echo "Creating service file..."
