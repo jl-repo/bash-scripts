@@ -17,32 +17,6 @@ SERVICE_NAME=mtrack
 PASSWORD=password
 #IP="$(hostname -I | awk '{ print $1 }')"
 
-# User Input Variables.
-echo ""
-echo "Enter the email for the SSL CSR (Default: person@quinticon.com.au). <Enter> to finalize."
-read -r EMAIL
-EMAIL="${EMAIL:=person@quinticon.com.au}"
-echo "Enter the URL for the SSL CSR (Default: mtrack.example.com). <Enter> to finalize."
-read -r COMMONNAME
-COMMONNAME="${COMMONNAME:=mtrack.example.com}"
-echo "Enter the country code for the SSL CSR (Default: AU). <Enter> to finalize."
-read -r COUNTRY
-COUNTRY="${COUNTRY:=AU}"
-echo "Enter the state for the SSL CSR (Default: New South Wales). <Enter> to finalize."
-read -r STATE
-STATE="${STATE:=New South Wales}"
-echo "Enter the locality for the SSL CSR (Default: Sydney). <Enter> to finalize."
-read -r LOCALITY
-LOCALITY="${LOCALITY:=Sydney}"
-echo "Enter the organization for the SSL CSR (Default: Quinticon Pty Ltd). <Enter> to finalize."
-read -r ORGANIZATION
-ORGANIZATION="${ORGANIZATION:=Quinticon Pty Ltd}"
-echo "Enter the organizationalunit for the SSL CSR (Default: Development). <Enter> to finalize."
-read -r ORGANIZATIONALUNIT
-ORGANIZATIONALUNIT="${ORGANIZATIONALUNIT:=Development}"
-echo ""
-
-
 # Check if the script is run as root or sudo.
 if [ "$(whoami 2> /dev/null)" != "root" ] && [ "$(id -un 2> /dev/null)" != "root" ]; then
       echo "You must be root to run this script! Switch to root or use sudo."
@@ -73,6 +47,31 @@ else
     echo "Distribution type not detected. Exiting deployment."
     exit 1
 fi
+
+# User Input Variables.
+echo ""
+echo "Enter the email for the SSL CSR (Default: person@quinticon.com.au). <Enter> to finalize."
+read -r EMAIL
+EMAIL="${EMAIL:=person@quinticon.com.au}"
+echo "Enter the URL for the SSL CSR (Default: mtrack.example.com). <Enter> to finalize."
+read -r COMMONNAME
+COMMONNAME="${COMMONNAME:=mtrack.example.com}"
+echo "Enter the country code for the SSL CSR (Default: AU). <Enter> to finalize."
+read -r COUNTRY
+COUNTRY="${COUNTRY:=AU}"
+echo "Enter the state for the SSL CSR (Default: New South Wales). <Enter> to finalize."
+read -r STATE
+STATE="${STATE:=New South Wales}"
+echo "Enter the locality for the SSL CSR (Default: Sydney). <Enter> to finalize."
+read -r LOCALITY
+LOCALITY="${LOCALITY:=Sydney}"
+echo "Enter the organization for the SSL CSR (Default: Quinticon Pty Ltd). <Enter> to finalize."
+read -r ORGANIZATION
+ORGANIZATION="${ORGANIZATION:=Quinticon Pty Ltd}"
+echo "Enter the organizationalunit for the SSL CSR (Default: Development). <Enter> to finalize."
+read -r ORGANIZATIONALUNIT
+ORGANIZATIONALUNIT="${ORGANIZATIONALUNIT:=Development}"
+echo ""
 
 # Install Prereq Software.
 if [ "${PKMGR}" = yum ]; then
@@ -235,7 +234,7 @@ echo "Creating service file..."
 cat > /etc/systemd/system/"${SERVICE_NAME//'"'/}".service << EOF
 [Unit] 
 Description=M-Track Application
-After=network.target 
+After=network.target neo4j.service
 
 [Service] 
 Type=simple
