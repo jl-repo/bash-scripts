@@ -5,16 +5,21 @@
 # Version 1.2
 # Quinticon M-Track Deployment Script. 
 # Works with both Debian and Fedora based distributions. Script validated on Ubuntu Server 22.04 and Redhat Enterprise Linux 8 and 9.
+# Requires the "MigrationTool" Java file to be in the same directrory as this script.
+# Requires ".env" file with Password and Service name variable in the same directory as this script.
 
 
 # Variables.
+ENVFILE="$(ls -a .env)"
 INSTALLFILE="$(ls MigrationTool*)"
 FIREWALLD="$(firewall-cmd --state 2>/dev/null)"
 FIREWALLUFW="$(ufw status 2>/dev/null | awk '{print $2}')"
 SELINUX_STATUS="$(grep "^SELINUX=" /etc/selinux/config 2>/dev/null)"
 LOCAL="$(localectl status | grep -o "LANG=en_AU.UTF-8")"
-SERVICE_NAME=mtrack
-PASSWORD=password
+
+# Import Static Variables from .env file that is in the same directory as the script. 
+export $(grep -v '^#' .env | xargs)
+
 #IP="$(hostname -I | awk '{ print $1 }')"
 
 # Check if the script is run as root or sudo.
@@ -27,10 +32,20 @@ fi
 if [ -f "${INSTALLFILE}" ]; then
     echo ""
     echo "MigrationTool Java File is located in the same directory as this script. Continuing deployment..."
-    echo ""
 else
     echo ""
     echo "Migration Tool Java file is not located in the same directory as this script. Please place a copy of .jar file in the same directory as this script."
+    exit 1
+fi
+
+# Check if the M-Track Java file is in the same directory as this script.
+if [ -f "${ENVFILE}" ]; then
+    echo ""
+    echo "Environment file (.env) is located in the same directory as this script. Continuing deployment..."
+    echo ""
+else
+    echo ""
+    echo "Environment file (.env) is not located in the same directory as this script. Please create the .env file."
     exit 1
 fi
 
@@ -40,9 +55,11 @@ echo ""
 if [ -f /etc/redhat-release ] ; then
     PKMGR="$(which yum | grep -o yum)"
     echo "Fedora based distribition. Using yum package manager."
+	echo ""
 elif [ -f /etc/debian_version ] ; then
     PKMGR="$(which apt-get | grep -o apt)"
     echo "Debian based distribiton. Using apt package manager."
+	echo ""
 else
     echo "Distribution type not detected. Exiting deployment."
     exit 1
@@ -50,16 +67,18 @@ fi
 
 # Case statement for Nginx Optional Install.
 while true; do
-    read -r -p 'Do you want to install and configure NGINX as a reverse proxy? Yes/No ' continue
+    read -r -p 'Do you want to install and configure NGINX as a reverse proxy? Yes/No.' continue
     case "$continue" in
-    n | N | no | No) NGINX=no break ;;
-    y | Y | yes | Yes) NGINX=yes break ;;
+    n | N | no | No) break;;
+    y | Y | yes | Yes) break;;
     *) /usr/bin/echo -e "Response not valid" ;;
     esac
 done
 
+
 # Install M-Track Prereq Software.
 if [ "${PKMGR}" = yum ]; then
+	echo ""
     echo "Adding neo4j repository..."
     rpm --import https://debian.neo4j.com/neotechnology.gpg.key
     echo -e '[neo4j]\nname=Neo4j Yum Repo\nbaseurl=http://yum.neo4j.com/stable\nenabled=1\ngpgcheck=1' > /etc/yum.repos.d/neo4j.repo
@@ -67,6 +86,7 @@ if [ "${PKMGR}" = yum ]; then
     echo "Installing OpenJava 11 and Neo4j..."
     yum install neo4j-3.5.5 openssl java-11-openjdk -y # using yum for wider compatibility. has a link to dnf for later distro's.
 elif [ "${PKMGR}" = apt ]; then
+	echo ""
     echo "Adding neo4j repository..."
     curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | gpg --dearmor -o /usr/share/keyrings/neo4j.gpg
     echo "deb [signed-by=/usr/share/keyrings/neo4j.gpg] https://debian.neo4j.com stable 3.5" | tee -a /etc/apt/sources.list.d/neo4j.list
@@ -80,7 +100,8 @@ fi
 
 # Set neo4j initial password.
 echo "Set neo4j Initial Password..."
-neo4j-admin set-initial-password $PASSWORD
+echo ""
+neo4j-admin set-initial-password "${PASSWORD}"
 
 # Enable prereq services.
 echo "Enabing neo4j Database for startup..."
@@ -88,7 +109,7 @@ systemctl enable --now neo4j
 echo ""
 systemctl status neo4j --no-pager
 
-if [ "${NGINX}" = yes ]; then
+if [ "${continue,,}" = yes ]; then
     if [ "${PKMGR}" = yum ]; then
         echo "Installing Nginx..."
         yum install nginx -y # using yum for wider compatibility. has a link to dnf for later distro's.
@@ -123,11 +144,11 @@ if [ "${NGINX}" = yes ]; then
 
 	# Create the CSR and Private Key request
 	echo "Creating CSR and Private Key..."
-	openssl req -newkey rsa:2048 -passout pass:$PASSWORD -keyout /etc/ssl/certs/mtrack.key -out /etc/ssl/certs/mtrack.csr -subj "/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANIZATION/OU=$ORGANIZATIONALUNIT/CN=$COMMONNAME/emailAddress=$EMAIL"
+	openssl req -newkey rsa:2048 -passout pass:"${PASSWORD}" -keyout /etc/ssl/certs/mtrack.key -out /etc/ssl/certs/mtrack.csr -subj "/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANIZATION/OU=$ORGANIZATIONALUNIT/CN=$COMMONNAME/emailAddress=$EMAIL"
 
 	# Create a Self Signed Certificate
 	echo "Creating an Self-Signed Certificate..."
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -passin pass:$PASSWORD -key /etc/ssl/certs/mtrack.key -out /etc/ssl/certs/mtrack.cert -subj "/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANIZATION/OU=$ORGANIZATIONALUNIT/CN=$COMMONNAME/emailAddress=$EMAIL"
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -passin pass:"${PASSWORD}" -key /etc/ssl/certs/mtrack.key -out /etc/ssl/certs/mtrack.cert -subj "/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANIZATION/OU=$ORGANIZATIONALUNIT/CN=$COMMONNAME/emailAddress=$EMAIL"
 
 	# Generate a OpenSSL DHPARAM file.
 	echo "Generate an OpenSSL DHPARAM file..."
@@ -205,6 +226,7 @@ chown mtrack /var/migrationtool
 chmod -R 660 /var/migrationtool
 
 # Copy M-Track JAR from source to dest.
+echo "Setting permissions on the MigrationTool.jar file..."
 cp MigrationTool* /opt/migrationtool/MigrationTool.jar
 chown -R mtrack /opt/migrationtool/
 chmod 550 /opt/migrationtool/MigrationTool.jar
@@ -216,20 +238,20 @@ if [ "$LOCAL" != LANG=en_AU.UTF-8 ]; then
 fi
 
 # Setting firewall rules for M-Track.
-if [ "${FIREWALLD}" = running ] || [ "${NGINX}" = yes ]; then
+if [ "${FIREWALLD}" = running ] || [ "${continue,,}" = yes ]; then
     echo "Adding Firewall Rules..."
     firewall-cmd --add-service=https --permanent
     echo "Reloading Firewalld"
     firewall-cmd --reload
-elif [ "${FIREWALLD}" = running ] || [ "${NGINX}" = no ]; then
+elif [ "${FIREWALLD}" = running ] || [ "${continue,,}" = no ]; then
     echo "Adding Firewall Rules..."
     firewall-cmd --add-port=8080 --permanent
     echo "Reloading Firewalld"
     firewall-cmd --reload
-elif [ "${FIREWALLUFW}" = active ] || [ "${NGINX}" = yes ]; then
+elif [ "${FIREWALLUFW}" = active ] || [ "${continue,,}" = yes ]; then
     echo "Adding Firewall Rules..."
     ufw allow 443/tcp
-elif [ "${FIREWALLUFW}" = active ] || [ "${NGINX}" = no ]; then
+elif [ "${FIREWALLUFW}" = active ] || [ "${continue,,}" = no ]; then
     echo "Adding Firewall Rules..."
     ufw allow 8080/tcp
 else
@@ -247,12 +269,12 @@ fi
 #EOF
 
 echo "Creating the application.properties file..."
-if [ "${NGINX}" = yes ]; then
+if [ "${continue,,}" = yes ]; then
 	cat > /opt/migrationtool/application.properties <<- EOF
 	mtrack.png-files.location=.
 	server.address=127.0.0.1
 	EOF
-elif [ "${NGINX}" = no ]; then
+elif [ "${continue,,}" = no ]; then
 	cat > /opt/migrationtool/application.properties <<- EOF
 	mtrack.png-files.location=.
 	EOF
