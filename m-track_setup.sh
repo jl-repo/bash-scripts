@@ -6,7 +6,7 @@
 # Quinticon M-Track Deployment Script. 
 # Works with both Debian and Fedora based distributions. Script validated on Ubuntu Server 22.04 and Redhat Enterprise Linux 8 and 9.
 # Requires the "MigrationTool" Java file to be in the same directrory as this script.
-# Requires ".env" file with Password and Service name variable in the same directory as this script.
+# Requires ".env" file which contains PASSWORD and SERVICE_NAME variables in the same directory as this script.
 
 
 # Variables.
