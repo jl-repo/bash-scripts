@@ -16,11 +16,12 @@ FIREWALLD="$(firewall-cmd --state 2>/dev/null)"
 FIREWALLUFW="$(ufw status 2>/dev/null | awk '{print $2}')"
 SELINUX_STATUS="$(grep "^SELINUX=" /etc/selinux/config 2>/dev/null)"
 LOCAL="$(localectl status | grep -o "LANG=en_AU.UTF-8")"
+#IP="$(hostname -I | awk '{ print $1 }')"
 
 # Import Static Variables from .env file that is in the same directory as the script. 
 export $(grep -v '^#' .env | xargs)
 
-#IP="$(hostname -I | awk '{ print $1 }')"
+
 
 # Check if the script is run as root or sudo.
 if [ "$(whoami 2> /dev/null)" != "root" ] && [ "$(id -un 2> /dev/null)" != "root" ]; then
@@ -65,9 +66,9 @@ else
     exit 1
 fi
 
-# Case statement for Nginx Optional Install.
+# Case statement for Nginx Optional install and configuration. 
 while true; do
-    read -r -p 'Do you want to install and configure NGINX as a reverse proxy? Yes/No.' continue
+    read -r -p 'Do you want to install and configure NGINX as a reverse proxy? Yes/No.' continue #'continue' used as variables get lost inside case statement.
     case "$continue" in
     n | N | no | No) break;;
     y | Y | yes | Yes) break;;
@@ -258,10 +259,10 @@ else
     echo "Firewall not enabled."
 fi
 
-# Create the environmentfile file.
+# Create the systemd environmentfile file.
 #echo "Creating environment file..."
 #cat > /etc/migrationtool/environmentfile << EOF
-#ROOT_DIR=/usr/local/bin
+#ROOT_DIR=/opt/migrationtool/
 ##EXEC_JAR="MigrationTool.jar"
 #JAVA_OPS="-Xmx128m"
 #WEB_SERVER_PORT="8080"
