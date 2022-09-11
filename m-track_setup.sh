@@ -85,7 +85,7 @@ if [ "${PKMGR}" = yum ]; then
     echo -e '[neo4j]\nname=Neo4j Yum Repo\nbaseurl=http://yum.neo4j.com/stable\nenabled=1\ngpgcheck=1' > /etc/yum.repos.d/neo4j.repo
     echo ""
     echo "Installing OpenJava 11 and Neo4j..."
-    yum install neo4j-3.5.5 openssl java-11-openjdk -y # using yum for wider compatibility. has a link to dnf for later distro's.
+    yum install neo4j-3.5.35 openssl java-11-openjdk -y # using yum for wider compatibility. has a link to dnf for later distro's.
 elif [ "${PKMGR}" = apt ]; then
 	echo ""
     echo "Adding neo4j repository..."
