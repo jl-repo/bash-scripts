@@ -1,0 +1,14 @@
+---
+- name: M-Track Deployment
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Prereqs
+      package:
+        name: 
+          - neo4j-3.5.35
+          - openssl 
+          - openjdk-11-jdk
+          - openjdk-8-jdk
+        state: present
+      

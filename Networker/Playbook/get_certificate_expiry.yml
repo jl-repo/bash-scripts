@@ -1,0 +1,53 @@
+---
+# get certificate details from specified host/port and check it is still valid.
+- hosts: localhost
+  gather_facts: true
+
+  tasks:
+    - name: Create empty list
+      set_fact:
+        results: []
+    - name: Get the site and port details and run the get_cert role
+      include_role:
+        name: get_cert
+      vars:
+        hostname: "{{ item.key }}"
+        port: "{{ item.value }}"
+      with_dict: "{{ site }}"
+
+    - debug:
+        var: results
+    
+    - set_fact: MailRelayGW="{{ (AWX_MailRelayGW_list|from_json) }}"
+    
+    #- name: Convert results to string
+    #  set_fact: 
+    #    string: "{{ results | join(',') }}"
+    
+    
+    #- debug:
+    #    var: string.split(',')
+    
+    - copy:
+        dest: /tmp/cert_expiry.txt
+        content: "{% for result in results %}{{ result }}\n{% endfor %}"
+      run_once: true
+    
+    - name: Sending Mail
+      mail:
+        host: "{{MailRelayGW.SMTPhost_ip}}"
+        username: "{{AWX_MailRelayGW_username}}"
+        password: "{{AWX_MailRelayGW_password}}"
+        port: "{{ MailRelayGW.port }}"
+        subject: 'Certificate Expiry Details'
+        from: "noreply@cba.com.au"
+        body: "{% for result in results %}{{ result }}<br>{% endfor %}"
+        attach: /tmp/cert_expiry.txt
+        to: "{{ email }}"
+        charset: utf8
+        subtype: html
+        
+    - file:
+        path: /tmp/cert_expiry.txt
+        state: absent
+ 
